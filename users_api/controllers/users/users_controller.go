@@ -44,7 +44,7 @@ func CreateUser(c *gin.Context) {
 func GetUser(c *gin.Context) {
 	userId, err := strconv.ParseInt(c.Param("user_id"), 10, 64)
 	if err != nil {
-		err := errors.NewBadRequestError("Invalid userId")
+		err := errors.NewBadRequestError("Invalid user Id")
 		c.JSON(err.Status, err)
 		return
 	}
@@ -57,8 +57,38 @@ func GetUser(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-func UpdateUser(c *gin.Context) {
+func DeleteUser(c *gin.Context) {
+	userId, err := strconv.ParseInt(c.Param("user_id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewBadRequestError("Invalid user Id"))
+		return
+	}
 
+	deleteErr := user_service.DeleteUser(userId)
+
+	if deleteErr != nil {
+		c.JSON(deleteErr.Status, deleteErr)
+		return
+	}
+	c.JSON(http.StatusNoContent, nil)
+}
+
+func UpdateUser(c *gin.Context) {
+	var user users.User
+
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewBadRequestError("Invalid Json Body"))
+		return
+	}
+
+	updateResult, updateErr := user_service.UpdateUser(user)
+
+	if updateErr != nil {
+		c.JSON(updateErr.Status, updateErr)
+		return
+	}
+
+	c.JSON(http.StatusOK, updateResult)
 }
 
 func SearchUser(c *gin.Context) {

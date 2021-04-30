@@ -25,3 +25,33 @@ func GetUser(userId int64) (*users.User, *errors.RestErr) {
 	}
 	return user, nil
 }
+
+func DeleteUser(userId int64) *errors.RestErr {
+	user := &users.User{
+		Id: userId,
+	}
+	if err := user.Delete(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateUser(user users.User) (*users.User, *errors.RestErr) {
+
+	oUser, err := GetUser(user.Id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if mapErr := oUser.MapValues(&user); mapErr != nil {
+		return nil, mapErr
+	}
+
+	if updateErr := oUser.Update(); updateErr != nil {
+		return nil, updateErr
+	}
+
+	return oUser, nil
+
+}
